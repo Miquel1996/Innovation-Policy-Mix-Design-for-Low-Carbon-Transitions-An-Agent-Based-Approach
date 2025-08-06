@@ -631,23 +631,21 @@ class Paralleler:
             hasattr(sys, 'executable') and 'SPYDER' in sys.executable.upper()
         )
 
-
+debug_params = {
+    'T_max': 600, 'N': 15, 'K': 6, 'alpha': 1, 'h': 6,
+    'J': 20, 'M': 20, 'iota': 1, 'iota_long_ratio': 0.7,
+    'chi_ms': 1, 'initial_markup': 1.0, 'chi_markup': 0.2,
+    'w_final': 0.1, 'w_init': 0.1, 'Tstart_w': 240, 'Tend_w': 480, 'chi_w': 0.2,
+    'price_rule': 0, 'procyclical': 0, 'free_research': False
+}
 # === Main execution ===
 if __name__ == "__main__":
-    debug_params = {
-        'T_max': 600, 'N': 15, 'K': 6, 'alpha': 1, 'h': 6,
-        'J': 20, 'M': 20, 'iota': 1, 'iota_long_ratio': 0.7,
-        'chi_ms': 1, 'initial_markup': 1.0, 'chi_markup': 0.2,
-        'w_final': 0.1, 'w_init': 0.1, 'Tstart_w': 240, 'Tend_w': 480, 'chi_w': 0.2,
-        'price_rule': 0, 'procyclical': 0, 'free_research': False
-    }
-
     # Detect total number of cores and reserve one for system
     available_cores = max(1, multiprocessing.cpu_count() - 1)
     
     results, stats, metrics = Paralleler.run_mc_fixed(
         debug_params,
-        n_runs=5,
+        n_runs=50,
         n_processes=available_cores,
         overlay_debug=True,
         auto_plot=True,

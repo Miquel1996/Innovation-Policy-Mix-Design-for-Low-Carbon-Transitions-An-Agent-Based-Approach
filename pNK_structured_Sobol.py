@@ -24,7 +24,7 @@ problem = {
 }
 
 # === Sobol Sampling ===
-n_samples = 8  # Base sample size
+n_samples = 128  # Base sample size
 param_values = saltelli.sample(problem, n_samples, calc_second_order=False)
 sobol_df = pd.DataFrame(param_values, columns=problem['names'])
 sobol_df['K'] = sobol_df['K'].round().astype(int)

@@ -59,13 +59,24 @@ def grid_search(base_params, param_grid, n_runs=5, n_processes=None, ci=95, outp
         if 1.0 < markup < 1.5: score += 1/9
         if 0.20 <= std_markup <= 0.40: score += 1/9
         if 0.10 <= skew_markup: score += 1/9
-        if 0.0005 <= avg_productivity_growth <= 0.0023: score += 1/9  # (converted %)
+        if 0.0005 <= avg_productivity_growth <= 0.0023: score += 1/9
         if 0.02 <= avg_rd_success <= 0.05: score += 1/9
-
-        # Store results
-        key = tuple(combo)
-        results_dict[key] = metrics
-        score_data.append({**{p: v for p, v in zip(param_names, combo)}, "score": score})
+        
+        # Store results (include metrics)
+        row = {**{p: v for p, v in zip(param_names, combo)}}
+        row.update({
+            "score": score,
+            "skew_prod": skew_prod,
+            "std_prod": std_prod,
+            "skew_market_share": skew_ms,
+            "hhi": hhi,
+            "markup": markup,
+            "std_markup": std_markup,
+            "skew_markup": skew_markup,
+            "avg_productivity_growth": avg_productivity_growth,
+            "avg_R&D_success": avg_rd_success
+        })
+        score_data.append(row)
 
     # === Build results DataFrame ===
     score_df = pd.DataFrame(score_data)
@@ -93,7 +104,8 @@ if __name__ == "__main__":
     # Example restricted grid
     param_grid = {
         'K': [4, 6],
-        'chi_markup': [0.2, 0.25]
+        'chi_markup': [0.2, 0.25],
+        'iota':[1,1.5]
     }
 
     score_df, results = grid_search(
