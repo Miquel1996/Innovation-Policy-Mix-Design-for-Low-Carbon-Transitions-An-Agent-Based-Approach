@@ -635,7 +635,7 @@ debug_params = {
     'T_max': 600, 'N': 15, 'K': 6, 'alpha': 1, 'h': 6,
     'J': 20, 'M': 20, 'iota': 1, 'iota_long_ratio': 0.7,
     'chi_ms': 1, 'initial_markup': 1.0, 'chi_markup': 0.2,
-    'w_final': 0.1, 'w_init': 0.1, 'Tstart_w': 240, 'Tend_w': 480, 'chi_w': 0.2,
+    'w_final': 0.1, 'w_init': 0.01, 'Tstart_w': 240, 'Tend_w': 480, 'chi_w': 0.2,
     'price_rule': 0, 'procyclical': 0, 'free_research': False
 }
 # === Main execution ===
