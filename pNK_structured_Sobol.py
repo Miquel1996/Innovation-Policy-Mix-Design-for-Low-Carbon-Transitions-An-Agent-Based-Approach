@@ -25,11 +25,14 @@ problem = {
 }
 
 # === Sobol Sampling ===
-n_samples = 2
-target_mc_runs = 5
+n_samples = 128
+target_mc_runs = 20
 param_values = saltelli.sample(problem, n_samples, calc_second_order=False)
 sobol_df = pd.DataFrame(param_values, columns=problem['names'])
 sobol_df['K'] = sobol_df['K'].round().astype(int)
+
+sobol_df["id"] = np.arange(len(sobol_df))  # ✅ Add this here
+
 
 # === Fixed parameters ===
 fixed_params = {
@@ -68,8 +71,10 @@ def run_sobol_sample(row_dict, fixed_params, n_runs, n_inner_cores):
         overlay_debug=False,
         auto_plot=False,
         debug_print=False,
-        variable_landscape=False
+        variable_landscape=False,
+        outer_desc=f"Sobol MC for sample #{row_dict.get('id', 'unknown')}"
     )
+
 
     summary = stats.summary_table(metrics)
     return {
@@ -88,7 +93,7 @@ if __name__ == "__main__":
     func = partial(run_sobol_sample, fixed_params=fixed_params, n_runs=target_mc_runs, n_inner_cores=inner_cores)
 
     with multiprocessing.Pool(outer_cores) as pool:
-        outputs = list(tqdm(pool.imap(func, sobol_df.to_dict('records')), total=len(sobol_df), desc="Sobol Analysis"))
+        outputs = list(tqdm(pool.imap(func, sobol_df.to_dict('records')), total=len(sobol_df), desc="Sobol Samples", position=0))
 
     sobol_df['productivity'] = [o['productivity'] for o in outputs]
     sobol_df['sustainability'] = [o['sustainability'] for o in outputs]

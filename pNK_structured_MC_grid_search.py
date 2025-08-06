@@ -29,8 +29,10 @@ def run_param_combo(combo_dict, base_params, n_runs, n_inner_cores):
         overlay_debug=False,
         auto_plot=False,
         debug_print=False,
-        variable_landscape=False
+        variable_landscape=False,
+        outer_desc=f"MC for {combo_dict}"
     )
+
 
     df_summary = stats.summary_table(metrics).set_index("Metric")["Value"]
 

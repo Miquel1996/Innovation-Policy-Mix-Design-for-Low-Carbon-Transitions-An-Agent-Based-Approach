@@ -570,47 +570,34 @@ class Statistician:
         )
         return df_summary
 
-
-
+from tqdm import tqdm
 
 class Paralleler:
     @staticmethod
-    def run_mc_fixed(params, n_runs, n_processes, overlay_debug=False, auto_plot=True, debug_print=True, variable_landscape=False):
+    def run_mc_fixed(params, n_runs, n_processes, overlay_debug=False, auto_plot=True,
+                     debug_print=True, variable_landscape=False, outer_desc=None):
         """
-        Runs Monte Carlo simulations.
-        - If variable_landscape = False, all runs use the same landscape seed (seed_landscape=1),
-          and only the research seed varies.
-        - If variable_landscape = True, both seeds vary across runs.
+        Runs Monte Carlo simulations with optional nested progress bar.
+        If outer_desc is provided, it shows MC progress nested under the outer loop.
         """
         if variable_landscape:
             seeds = [(i, i) for i in range(1, n_runs + 1)]  # both vary
         else:
             seeds = [(1, i) for i in range(1, n_runs + 1)]  # fixed landscape
-    
-        print("Seeds for MC runs:", seeds)
+
         args = [(params, s[0], s[1]) for s in seeds]
-        print(f"Starting MC: {n_runs} runs, {n_processes} processes...")
-        start_time = time.time()
 
+        results = []
         if Paralleler._is_interactive():
-            print("⚠ Interactive mode detected: running sequentially.")
-            results = [Paralleler._run_single(*arg) for arg in tqdm(args)]
+            for a in tqdm(args, desc="MC (interactive)", leave=False):
+                results.append(Paralleler._run_single(*a))
         else:
+            # Show nested progress bar
             with Pool(n_processes) as pool:
-                results = list(tqdm(pool.starmap(Paralleler._run_single, args), total=n_runs))
-
-        elapsed = time.time() - start_time
-        print(f"✅ MC completed in {elapsed:.2f}s ({elapsed/60:.2f} min)")
-
-        if debug_print:
-            for run_idx, run in enumerate(results):
-                print(f"\n=== RUN {run_idx+1}/{n_runs} ===")
-                print("Market share HHI:", [np.sum(run['market_share'][:, t]**2) for t in range(run['market_share'].shape[1])][-5:])
-                print("Average markup:", np.mean(run['markup'], axis=0)[-5:])
-                print("Total profit:", np.sum(run['profit'], axis=0)[-5:])
-                print("Total output:", np.sum(run['units'], axis=0)[-5:])
-                print("Average price:", np.mean(run['price'], axis=0)[-5:])
-                print("Average productivity:", np.mean(run['productivity'], axis=0)[-5:])
+                results = []
+                for result in tqdm(pool.imap(Paralleler._run_single_wrapper, args),
+                                   total=n_runs, desc=outer_desc or "MC Runs", leave=False, position=1):
+                    results.append(result)
 
         stats = Statistician(results, params)
         metrics = stats.compute(ci=95)
@@ -625,15 +612,18 @@ class Paralleler:
         return controller.run()
 
     @staticmethod
+    def _run_single_wrapper(args):
+        return Paralleler._run_single(*args)
+
+    @staticmethod
     def _is_interactive():
         import sys
         return hasattr(sys, 'ps1') or 'IPYKERNEL' in sys.modules or (
-            hasattr(sys, 'executable') and 'SPYDER' in sys.executable.upper()
-        )
+            hasattr(sys, 'executable') and 'SPYDER' in sys.executable.upper())
 
 debug_params = {
     'T_max': 600, 'N': 15, 'K': 6, 'alpha': 1, 'h': 6,
-    'J': 20, 'M': 20, 'iota': 1, 'iota_long_ratio': 0.7,
+    'J': 20, 'M': 20, 'iota': 1.25, 'iota_long_ratio': 0.7,
     'chi_ms': 1, 'initial_markup': 1.0, 'chi_markup': 0.2,
     'w_final': 0.1, 'w_init': 0.01, 'Tstart_w': 240, 'Tend_w': 480, 'chi_w': 0.2,
     'price_rule': 0, 'procyclical': 0, 'free_research': False
