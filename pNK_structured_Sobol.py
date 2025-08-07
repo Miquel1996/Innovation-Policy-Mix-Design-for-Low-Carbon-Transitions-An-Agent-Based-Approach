@@ -31,7 +31,7 @@ param_values = saltelli.sample(problem, n_samples, calc_second_order=False)
 sobol_df = pd.DataFrame(param_values, columns=problem['names'])
 sobol_df['K'] = sobol_df['K'].round().astype(int)
 
-sobol_df["id"] = np.arange(len(sobol_df))  # ✅ Add this here
+sobol_df["id"] = np.arange(len(sobol_df))
 
 
 # === Fixed parameters ===
@@ -39,7 +39,7 @@ fixed_params = {
     'T_max': 600, 'N': 15, 'h': 6, 'J': 20, 'M': 20,
     'initial_markup': 1.0, 'price_rule': 0, 'procyclical': 0,
     'free_research': False,
-    'w_init': 0.01  # 🔧 fixed!
+    'w_init': 0.01  
 }
 
 # === Smart core allocator ===
